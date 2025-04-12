@@ -8,7 +8,7 @@ class Lexer:
         # Estados
         self.ESTADO_INICIAL = 0
         self.ESTADO_LENDO_PROPOSICAO = 1
-        self.ESTADO_LENDO_OPERADOR = 2  # Agora unifica operadores unários e binários inicialmente
+        self.ESTADO_LENDO_OPERADOR = 2 
         self.ESTADO_LENDO_CONSTANTE = 3
         self.ESTADO_ERRO = -1
         
