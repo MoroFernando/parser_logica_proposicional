@@ -63,7 +63,7 @@ class Lexer:
                 pass  # Ignora espaços em branco
             else:
                 self.estado_atual = self.ESTADO_ERRO
-                self.erro = f"Caractere inválido no início: '{char}'"
+                self.erro = f"Caractere inválido: '{char}'"
         
         elif self.estado_atual == self.ESTADO_LENDO_PROPOSICAO:
             if char.isdigit() or char.isalpha():
