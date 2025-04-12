@@ -1,0 +1,4 @@
+3
+true
+\neg P1
+(\wedge (\neg P1) (\vee Q2 R3))
