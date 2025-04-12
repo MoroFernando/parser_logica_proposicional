@@ -8,9 +8,8 @@ class Lexer:
         # Estados
         self.ESTADO_INICIAL = 0
         self.ESTADO_LENDO_PROPOSICAO = 1
-        self.ESTADO_LENDO_OPERADOR_UNARIO = 2
-        self.ESTADO_LENDO_OPERADOR_BINARIO = 3
-        self.ESTADO_LENDO_CONSTANTE = 4
+        self.ESTADO_LENDO_OPERADOR = 2  # Agora unifica operadores unários e binários inicialmente
+        self.ESTADO_LENDO_CONSTANTE = 3
         self.ESTADO_ERRO = -1
         
         # Tipos de tokens
@@ -20,6 +19,15 @@ class Lexer:
         self.TOKEN_OPERADOR_BINARIO = 'OPERADOR_BINARIO'
         self.TOKEN_ABRE_PAREN = 'ABRE_PAREN'
         self.TOKEN_FECHA_PAREN = 'FECHA_PAREN'
+        
+        # Operadores reconhecidos
+        self.OPERADORES = {
+            '\\neg': self.TOKEN_OPERADOR_UNARIO,
+            '\\wedge': self.TOKEN_OPERADOR_BINARIO,
+            '\\vee': self.TOKEN_OPERADOR_BINARIO,
+            '\\rightarrow': self.TOKEN_OPERADOR_BINARIO,
+            '\\leftrightarrow': self.TOKEN_OPERADOR_BINARIO
+        }
     
     def reset(self):
         """Reinicia o analisador para processar uma nova entrada"""
@@ -44,7 +52,7 @@ class Lexer:
                 self.adicionar_token(self.TOKEN_FECHA_PAREN, ')')
             elif char == '\\':
                 self.lexema += char
-                self.estado_atual = self.ESTADO_LENDO_OPERADOR_UNARIO
+                self.estado_atual = self.ESTADO_LENDO_OPERADOR
             elif char.isdigit():
                 self.lexema += char
                 self.estado_atual = self.ESTADO_LENDO_PROPOSICAO
@@ -70,23 +78,20 @@ class Lexer:
                 self.estado_atual = self.ESTADO_ERRO
                 self.erro = f"Caractere inválido em proposição: '{char}'"
         
-        elif self.estado_atual == self.ESTADO_LENDO_OPERADOR_UNARIO:
+        elif self.estado_atual == self.ESTADO_LENDO_OPERADOR:
             self.lexema += char
-            if self.lexema == '\\neg':
-                self.adicionar_token(self.TOKEN_OPERADOR_UNARIO)
-                self.estado_atual = self.ESTADO_INICIAL
-            elif len(self.lexema) > 4:  # '\\neg' tem 4 caracteres
-                self.estado_atual = self.ESTADO_ERRO
-                self.erro = f"Operador unário inválido: '{self.lexema}'"
-        
-        elif self.estado_atual == self.ESTADO_LENDO_OPERADOR_BINARIO:
-            self.lexema += char
-            if self.lexema in ['\\wedge', '\\vee', '\\rightarrow', '\\leftrightarrow']:
-                self.adicionar_token(self.TOKEN_OPERADOR_BINARIO)
-                self.estado_atual = self.ESTADO_INICIAL
-            elif len(self.lexema) > len('\\leftrightarrow'):
-                self.estado_atual = self.ESTADO_ERRO
-                self.erro = f"Operador binário inválido: '{self.lexema}'"
+            # Verifica se o lexema atual corresponde a algum operador conhecido
+            for op in self.OPERADORES:
+                if op.startswith(self.lexema):
+                    if op == self.lexema:
+                        # Operador completo encontrado
+                        self.adicionar_token(self.OPERADORES[op])
+                        self.estado_atual = self.ESTADO_INICIAL
+                    return
+            
+            # Se chegou aqui, não é um operador válido
+            self.estado_atual = self.ESTADO_ERRO
+            self.erro = f"Operador inválido: '{self.lexema}'"
         
         elif self.estado_atual == self.ESTADO_LENDO_CONSTANTE:
             self.lexema += char
@@ -121,18 +126,12 @@ class Lexer:
                 else:
                     self.estado_atual = self.ESTADO_ERRO
                     self.erro = f"Constante inválida: '{self.lexema}'"
-            elif self.estado_atual == self.ESTADO_LENDO_OPERADOR_UNARIO:
-                if self.lexema == '\\neg':
-                    self.adicionar_token(self.TOKEN_OPERADOR_UNARIO)
+            elif self.estado_atual == self.ESTADO_LENDO_OPERADOR:
+                if self.lexema in self.OPERADORES:
+                    self.adicionar_token(self.OPERADORES[self.lexema])
                 else:
                     self.estado_atual = self.ESTADO_ERRO
-                    self.erro = f"Operador unário inválido: '{self.lexema}'"
-            elif self.estado_atual == self.ESTADO_LENDO_OPERADOR_BINARIO:
-                if self.lexema in ['\\wedge', '\\vee', '\\rightarrow', '\\leftrightarrow']:
-                    self.adicionar_token(self.TOKEN_OPERADOR_BINARIO)
-                else:
-                    self.estado_atual = self.ESTADO_ERRO
-                    self.erro = f"Operador binário inválido: '{self.lexema}'"
+                    self.erro = f"Operador inválido: '{self.lexema}'"
         
         if self.estado_atual == self.ESTADO_ERRO:
             return (False, self.erro, [])

@@ -1,4 +1,4 @@
 3
 true
-\neg P1
+\wedge \neg (1 ) \vee 2)
 (\wedge (\neg P1) (\vee Q2 R3))
