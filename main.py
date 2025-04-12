@@ -1,6 +1,7 @@
 from lexer import Lexer
+from parserLL1 import ParserLL1
 
-def processar_arquivo(nome_arquivo):
+def processar_arquivo(nome_arquivo, print_tokens=False):
     """Lê e processa um arquivo com expressões lógicas"""
     try:
         with open(nome_arquivo, 'r') as arquivo:
@@ -12,8 +13,6 @@ def processar_arquivo(nome_arquivo):
                 print(f"Erro: A primeira linha deve conter um número inteiro. Valor encontrado: '{primeira_linha}'")
                 return
             
-            print(f"Arquivo contém {num_expressoes} expressões para analisar\n")
-            
             # Processa cada expressão
             lexer = Lexer()
             for i, linha in enumerate(arquivo, 1):
@@ -22,17 +21,22 @@ def processar_arquivo(nome_arquivo):
                     break
                 
                 expressao = linha.strip()
-                print(f"\nExpressão {i}: {expressao}")
+                print(f"\nExpressão >>> {expressao}")
                 sucesso, mensagem, tokens = lexer.analisar(expressao)
-                
+
                 if sucesso:
-                    print("Status: VÁLIDA")
-                    print("Tokens encontrados:")
-                    for token in tokens:
-                        print(f"  {token[0]}: {token[1]}")
+                    if print_tokens:
+                        print("Tokens encontrados:")
+                        for token in tokens:
+                            print(f"  {token[0]}: {token[1]}")
+                    parser = ParserLL1(tokens)
+                    resultado, mensagem = parser.parse()
+                    if resultado:
+                        print(f"[VÁLIDA]")
+                    else:
+                        print(f"[INVÁLIDA]: {mensagem}")
                 else:
-                    print("Status: INVÁLIDA")
-                    print(f"Erro: {mensagem}")
+                    print(f"[INVÁLIDA]: {mensagem}")
     
     except FileNotFoundError:
         print(f"Erro: Arquivo '{nome_arquivo}' não encontrado.")
