@@ -21,7 +21,7 @@ def processar_arquivo(nome_arquivo, print_tokens=False):
                     break
                 
                 expressao = linha.strip()
-                print(f"\nExpressão >>> {expressao}")
+                print(f"Expressão >>> {expressao}")
                 sucesso, mensagem, tokens = lexer.analisar(expressao)
 
                 if sucesso:
@@ -52,4 +52,4 @@ if __name__ == "__main__":
         sys.exit(1)
     
     nome_arquivo = sys.argv[1]
-    processar_arquivo(nome_arquivo, print_tokens=True)
+    processar_arquivo(nome_arquivo)

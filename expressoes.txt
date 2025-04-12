@@ -1,3 +1,5 @@
-2
+4
 (\neg 2p)
 (\vee true false)
+true
+true (\neg)
