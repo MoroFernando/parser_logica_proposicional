@@ -52,4 +52,4 @@ if __name__ == "__main__":
         sys.exit(1)
     
     nome_arquivo = sys.argv[1]
-    processar_arquivo(nome_arquivo)
+    processar_arquivo(nome_arquivo, print_tokens=True)

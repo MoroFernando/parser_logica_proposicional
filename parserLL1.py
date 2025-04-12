@@ -1,71 +1,49 @@
 class ParserLL1:
     def __init__(self, tokens):
-        self.tokens = tokens
+        self.tokens = tokens + [("EOF", "$")]  # Adiciona marcador de fim
         self.pos = 0
-        self.current_token = tokens[0] if tokens else None
-        self.erro = ""
-    
-    def advance(self):
-        """Avança para o próximo token"""
-        self.pos += 1
-        if self.pos < len(self.tokens):
-            self.current_token = self.tokens[self.pos]
+        self.pilha = ["EOF", "FORMULA"]
+
+        # Tabela preditiva: (não-terminal, lookahead) -> produção
+        self.tabela = {
+            ("FORMULA", "CONSTANTE"): ["CONSTANTE"],
+            ("FORMULA", "PROPOSICAO"): ["PROPOSICAO"],
+            ("FORMULA", "ABRE_PAREN"): ["ABRE_PAREN", "OPERADOR", "FORMULA", "FECHA_PAREN"],
+
+            ("OPERADOR", "OPERADOR_UNARIO"): ["OPERADOR_UNARIO"],
+            ("OPERADOR", "OPERADOR_BINARIO"): ["OPERADOR_BINARIO"]
+        }
+
+    def current_token(self):
+        return self.tokens[self.pos][0] if self.pos < len(self.tokens) else "EOF"
+
+    def match(self, esperado):
+        atual_tipo, atual_valor = self.tokens[self.pos]
+        if atual_tipo == esperado:
+            self.pos += 1
         else:
-            self.current_token = None
-    
-    def eat(self, token_type):
-        """Consome o token atual se for do tipo esperado"""
-        if self.current_token and self.current_token[0] == token_type:
-            self.advance()
-        else:
-            expected = token_type
-            found = self.current_token[0] if self.current_token else "fim da entrada"
-            self.erro = f"Erro de sintaxe: esperado '{expected}', encontrado '{found}'"
-            raise SyntaxError(self.erro)
-    
+            raise SyntaxError(f"Esperado '{esperado}', mas encontrado '{atual_tipo}'.")
+
     def parse(self):
-        """Inicia o parsing da expressão"""
         try:
-            self.formula()
-            if self.current_token is not None:
-                raise SyntaxError(f"Erro: tokens remanescentes após a fórmula completa: {self.current_token}")
-            return (True, "Parsing concluído com sucesso")
+            while self.pilha:
+                topo = self.pilha.pop()
+                lookahead = self.current_token()
+
+                # Caso terminal
+                if topo in ["CONSTANTE", "PROPOSICAO", "ABRE_PAREN", "FECHA_PAREN", "OPERADOR_UNARIO", "OPERADOR_BINARIO", "EOF"]:
+                    self.match(topo)
+
+                # Caso não-terminal
+                else:
+                    producao = self.tabela.get((topo, lookahead))
+                    if not producao:
+                        return (False, f"Erro sintático: '{topo}' não pode começar com '{lookahead}'.")
+                    self.pilha.extend(reversed(producao))
+
+            # Após esvaziar a pilha, esperamos que todo token tenha sido consumido
+            if self.current_token() != "EOF":
+                return (False, "Tokens restantes após fim da análise.")
+            return (True, "Expressão válida")
         except SyntaxError as e:
             return (False, str(e))
-    
-    def formula(self):
-        """FORMULA = CONSTANTE | PROPOSICAO | FORMULAUNARIA | FORMULABINARIA"""
-        if not self.current_token:
-            raise SyntaxError("Erro: fórmula incompleta")
-        
-        token_type = self.current_token[0]
-        
-        if token_type == 'CONSTANTE':
-            self.eat('CONSTANTE')
-        elif token_type == 'PROPOSICAO':
-            self.eat('PROPOSICAO')
-        elif token_type == 'ABRE_PAREN':
-            # Pode ser FORMULAUNARIA ou FORMULABINARIA
-            self.eat('ABRE_PAREN')
-            
-            if self.current_token and self.current_token[0] == 'OPERADOR_UNARIO':
-                self.formula_unaria()
-            elif self.current_token and self.current_token[0] == 'OPERADOR_BINARIO':
-                self.formula_binaria()
-            else:
-                raise SyntaxError("Erro: esperado operador unário ou binário após '('")
-            
-            self.eat('FECHA_PAREN')
-        else:
-            raise SyntaxError(f"Erro: token inesperado '{token_type}' no início da fórmula")
-    
-    def formula_unaria(self):
-        """FORMULAUNARIA = ABREPAREN OPERADORUNARIO FORMULA FECHAPAREN"""
-        self.eat('OPERADOR_UNARIO')
-        self.formula()
-    
-    def formula_binaria(self):
-        """FORMULABINARIA = ABREPAREN OPERADORBINARIO FORMULA FORMULA FECHAPAREN"""
-        self.eat('OPERADOR_BINARIO')
-        self.formula()  # Primeira fórmula
-        self.formula()  # Segunda fórmula
