@@ -1,7 +1,7 @@
 from lexer import Lexer
 from parserLL1 import ParserLL1
 
-def processar_arquivo(nome_arquivo, print_tokens=False):
+def processar_arquivo(nome_arquivo, debug=False):
     """Lê e processa um arquivo com expressões lógicas"""
     try:
         with open(nome_arquivo, 'r') as arquivo:
@@ -21,22 +21,32 @@ def processar_arquivo(nome_arquivo, print_tokens=False):
                     break
                 
                 expressao = linha.strip()
-                print(f"Expressão >>> {expressao}")
+                if debug:
+                    print(f"\nExpressão {i} >>> {expressao}")
                 sucesso, mensagem, tokens = lexer.analisar(expressao)
 
                 if sucesso:
-                    if print_tokens:
-                        print("Tokens encontrados:")
+                    if debug:
+                        print("   Tokens encontrados:")
                         for token in tokens:
-                            print(f"  {token[0]}: {token[1]}")
+                            print(f"     {token[0]}: {token[1]}")
                     parser = ParserLL1(tokens)
                     resultado, mensagem = parser.parse()
                     if resultado:
-                        print(f"[VÁLIDA]")
+                        if debug:
+                            print(f"\033[92m[VÁLIDA]\033[0m")
+                        else:
+                            print(f"válida")
                     else:
-                        print(f"[INVÁLIDA]: {mensagem}")
+                        if debug:
+                            print(f"\033[91m[INVÁLIDA]: {mensagem}\033[0m")
+                        else:
+                            print(f"inválida")
                 else:
-                    print(f"[INVÁLIDA]: {mensagem}")
+                    if debug:
+                        print(f"\033[91m[INVÁLIDA]: {mensagem}\033[0m")
+                    else:
+                        print(f"inválida")
     
     except FileNotFoundError:
         print(f"Erro: Arquivo '{nome_arquivo}' não encontrado.")
