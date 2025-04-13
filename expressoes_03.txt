@@ -1,0 +1,10 @@
+9
+true
+false
+1a
+2b
+( \neg 3c )
+( \wedge 4d true )
+( \vee false 5e )
+( \rightarrow ( \neg 6f ) 7g )
+( \leftrightarrow ( \wedge 8h 9i ) ( \vee true false ) )

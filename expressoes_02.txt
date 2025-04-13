@@ -1,0 +1,5 @@
+4
+(\vee false (\wedge 1p 2p))
+(\rightarrow true false)
+(\neg (1p))
+(\rightarrow (\vee 1var 2var) (\leftrightarrow true 1var))
