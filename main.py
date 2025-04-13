@@ -54,12 +54,13 @@ def processar_arquivo(nome_arquivo, debug=False):
         print(f"Erro inesperado ao processar o arquivo: {str(e)}")
 
 if __name__ == "__main__":
-    import sys
-    
-    if len(sys.argv) != 2:
-        print("Uso: python analisador_logico.py <arquivo_de_entrada>")
-        print("Exemplo: python analisador_logico.py expressoes.txt")
-        sys.exit(1)
-    
-    nome_arquivo = sys.argv[1]
-    processar_arquivo(nome_arquivo)
+  import sys
+  
+  if len(sys.argv) < 2 or len(sys.argv) > 3:
+    print("Uso: python analisador_logico.py <arquivo_de_entrada> [--debug]")
+    print("Exemplo: python analisador_logico.py expressoes.txt --debug")
+    sys.exit(1)
+  
+  nome_arquivo = sys.argv[1]
+  debug = "--debug" in sys.argv
+  processar_arquivo(nome_arquivo, debug=debug)
