@@ -35,7 +35,12 @@ O arquivo de entrada deve seguir o seguinte formato:
 
 Exemplo de arquivo de entrada (`expressoes.txt`):
 
-`4 (\neg 2p) (\vee true false) true true (\neg)`
+```
+3
+(\neg 2p)
+(\wedge (\neg true) (\rightarrow false 3q ))
+true
+```
 
 ### Arquivos de Exemplo
 
